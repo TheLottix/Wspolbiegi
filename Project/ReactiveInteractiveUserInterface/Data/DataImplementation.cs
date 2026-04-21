@@ -33,9 +33,14 @@ namespace TP.ConcurrentProgramming.Data
       if (upperLayerHandler == null)
         throw new ArgumentNullException(nameof(upperLayerHandler));
       Random random = new Random();
+
+      int maxPosition = 90;
+      int minPosition = 5;
+
       for (int i = 0; i < numberOfBalls; i++)
       {
-          Vector startingPosition = new(random.Next(100, 300), random.Next(100, 300));
+          Vector startingPosition = new(random.Next(minPosition, maxPosition), random.Next(minPosition, maxPosition));
+
           Vector initialVelocity = new Vector((random.NextDouble() - 0.5) * 10, (random.NextDouble() - 0.5) * 10);
           Ball newBall = new(startingPosition, initialVelocity);
           upperLayerHandler(startingPosition, newBall);
