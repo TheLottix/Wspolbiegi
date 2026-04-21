@@ -14,10 +14,14 @@ namespace TP.ConcurrentProgramming.Data
   {
     #region ctor
 
+    public double Diameter { get; init; }
+     
     internal Ball(Vector initialPosition, Vector initialVelocity)
     {
       Position = initialPosition;
       Velocity = initialVelocity;
+
+      Diameter = 5.0;
     }
 
     #endregion ctor
@@ -41,8 +45,6 @@ namespace TP.ConcurrentProgramming.Data
 
     internal void Move(double boardWidth, double boardHeight)
     {
-        double diameter = 20.0;
-
         double nextX = Position.x + Velocity.x;
         double nextY = Position.y + Velocity.y;
 
@@ -51,9 +53,9 @@ namespace TP.ConcurrentProgramming.Data
             nextX = 0;
             Velocity = new Vector(-Velocity.x, Velocity.y);
         }
-        else if (nextX + diameter >= boardWidth)
+        else if (nextX + Diameter >= boardWidth)
         {
-            nextX = boardWidth - diameter;
+            nextX = boardWidth - Diameter;
             Velocity = new Vector(-Velocity.x, Velocity.y);
         }
 
@@ -62,9 +64,9 @@ namespace TP.ConcurrentProgramming.Data
             nextY = 0;
             Velocity = new Vector(Velocity.x, -Velocity.y);
         }
-        else if (nextY + diameter >= boardHeight)
+        else if (nextY + Diameter >= boardHeight)
         {
-            nextY = boardHeight - diameter;
+            nextY = boardHeight - Diameter;
             Velocity = new Vector(Velocity.x, -Velocity.y);
         }
 

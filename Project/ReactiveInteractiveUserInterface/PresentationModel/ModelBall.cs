@@ -23,6 +23,9 @@ namespace TP.ConcurrentProgramming.Presentation.Model
     {
       TopBackingField = top;
       LeftBackingField = left;
+
+      double scale = 4.0;
+      Diameter = underneathBall.Diameter * scale;
       underneathBall.NewPositionNotification += NewPositionNotification;
     }
 
@@ -69,10 +72,14 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
     private void NewPositionNotification(object sender, IPosition e)
     {
-      Top = e.y; Left = e.x;
+        double scaleX = 4.0;
+        double scaleY = 3.9;
+
+        Left = e.x * scaleX;
+        Top = e.y * scaleY;
     }
 
-    private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
     {
       PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

@@ -82,13 +82,11 @@ namespace TP.ConcurrentProgramming.Data
 
     private void Move(object? x)
     {
-        double boardWidth = 400;
-        double boardHeight = 385;
+        double logicBoardWidth = 100.0;
+        double logicBoardHeight = 100.0;
 
         foreach (Ball item in BallsList)
-        {
-            item.Move(boardWidth, boardHeight);
-        }
+            item.Move(logicBoardWidth, logicBoardHeight);
     }
 
         #endregion private
