@@ -35,12 +35,13 @@ namespace TP.ConcurrentProgramming.Data
       Random random = new Random();
       for (int i = 0; i < numberOfBalls; i++)
       {
-        Vector startingPosition = new(random.Next(100, 400 - 100), random.Next(100, 400 - 100));
-        Ball newBall = new(startingPosition, startingPosition);
-        upperLayerHandler(startingPosition, newBall);
-        BallsList.Add(newBall);
+          Vector startingPosition = new(random.Next(100, 300), random.Next(100, 300));
+          Vector initialVelocity = new Vector((random.NextDouble() - 0.5) * 10, (random.NextDouble() - 0.5) * 10);
+          Ball newBall = new(startingPosition, initialVelocity);
+          upperLayerHandler(startingPosition, newBall);
+          BallsList.Add(newBall);
       }
-    }
+        }
 
     #endregion DataAbstractAPI
 
@@ -68,8 +69,8 @@ namespace TP.ConcurrentProgramming.Data
       GC.SuppressFinalize(this);
     }
 
-    #endregion IDisposable
-
+        #endregion IDisposable
+        
     #region private
 
     //private bool disposedValue;
@@ -81,15 +82,20 @@ namespace TP.ConcurrentProgramming.Data
 
     private void Move(object? x)
     {
-      foreach (Ball item in BallsList)
-        item.Move(new Vector((RandomGenerator.NextDouble() - 0.5) * 10, (RandomGenerator.NextDouble() - 0.5) * 10));
+        double boardWidth = 400;
+        double boardHeight = 385;
+
+        foreach (Ball item in BallsList)
+        {
+            item.Move(boardWidth, boardHeight);
+        }
     }
 
-    #endregion private
+        #endregion private
 
-    #region TestingInfrastructure
+        #region TestingInfrastructure
 
-    [Conditional("DEBUG")]
+        [Conditional("DEBUG")]
     internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
     {
       returnBallsList(BallsList);
