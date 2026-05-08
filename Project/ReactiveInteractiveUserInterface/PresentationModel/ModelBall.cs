@@ -72,8 +72,8 @@ namespace TP.ConcurrentProgramming.Presentation.Model
 
     private void NewPositionNotification(object sender, IPosition e)
     {
-        double scaleX = 4.0;
-        double scaleY = 3.9;
+        double scaleX = 400.0 / 100.0;
+        double scaleY = 400.0 / 100.0;
 
         Left = e.x * scaleX;
         Top = e.y * scaleY;

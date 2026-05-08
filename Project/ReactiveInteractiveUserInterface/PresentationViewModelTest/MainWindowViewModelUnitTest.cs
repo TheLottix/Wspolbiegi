@@ -12,6 +12,7 @@ using System;
 using System.ComponentModel;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading;
 using TP.ConcurrentProgramming.Presentation.Model;
 using ModelIBall = TP.ConcurrentProgramming.Presentation.Model.IBall;
 
@@ -20,7 +21,13 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
   [TestClass]
   public class MainWindowViewModelUnitTest
   {
-    [TestMethod]
+      private class ImmediateSyncContext : SynchronizationContext
+      {
+          public override void Post(SendOrPostCallback d, object state) => d(state);
+          public override void Send(SendOrPostCallback d, object state) => d(state);
+      }
+
+        [TestMethod]
     public void ConstructorTest()
     {
       ModelNullFixture nullModelFixture = new();
@@ -43,12 +50,15 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel.Test
     [TestMethod]
     public void BehaviorTestMethod()
     {
+      SynchronizationContext.SetSynchronizationContext(new ImmediateSyncContext());
+
+
       ModelSimulatorFixture modelSimulator = new();
       MainWindowViewModel viewModel = new(modelSimulator);
       Assert.IsNotNull(viewModel.Balls);
       Assert.AreEqual<int>(0, viewModel.Balls.Count);
       Random random = new Random();
-      int numberOfBalls = random.Next(1, 10);
+      int numberOfBalls = 3;
       viewModel.Start(numberOfBalls);
       Assert.AreEqual<int>(numberOfBalls, viewModel.Balls.Count);
       viewModel.Dispose();

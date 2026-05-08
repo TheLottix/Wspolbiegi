@@ -13,109 +13,89 @@ using System.Diagnostics;
 
 namespace TP.ConcurrentProgramming.Data
 {
-  internal class DataImplementation : DataAbstractAPI
-  {
-    #region ctor
+    internal class DataImplementation : DataAbstractAPI {
 
-    public DataImplementation()
-    {
-      MoveTimer = new Timer(Move, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
-    }
+        #region DataAbstractAPI
+        public override double BoardWidth => 100.0;
+        public override double BoardHeight => 100.0;
 
-    #endregion ctor
+        public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler) {
+        if (Disposed)
+            throw new ObjectDisposedException(nameof(DataImplementation));
+        if (upperLayerHandler == null)
+            throw new ArgumentNullException(nameof(upperLayerHandler));
 
-    #region DataAbstractAPI
+        Random random = new Random();
 
-    public override void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler)
-    {
-      if (Disposed)
-        throw new ObjectDisposedException(nameof(DataImplementation));
-      if (upperLayerHandler == null)
-        throw new ArgumentNullException(nameof(upperLayerHandler));
-      Random random = new Random();
+         for (int i = 0; i < numberOfBalls; i++) {
+             double diameter = random.Next(5, 12);
+             double mass = diameter / 2.0;
 
-      int maxPosition = 90;
-      int minPosition = 5;
+             Vector startingPosition = new Vector(random.NextDouble() * (BoardWidth - diameter), random.NextDouble() * (BoardHeight - diameter));
+             Vector initialVelocity = new Vector((random.NextDouble() - 0.5) * 5, (random.NextDouble() - 0.5) * 5);
+             Ball newBall = new Ball(startingPosition, initialVelocity, BoardWidth, BoardHeight, mass, diameter);
 
-      for (int i = 0; i < numberOfBalls; i++)
-      {
-          Vector startingPosition = new(random.Next(minPosition, maxPosition), random.Next(minPosition, maxPosition));
-
-          Vector initialVelocity = new Vector((random.NextDouble() - 0.5) * 10, (random.NextDouble() - 0.5) * 10);
-          Ball newBall = new(startingPosition, initialVelocity);
-          upperLayerHandler(startingPosition, newBall);
-          BallsList.Add(newBall);
-      }
+             upperLayerHandler(startingPosition, newBall);
+             BallsList.Add(newBall);
+         }
         }
 
-    #endregion DataAbstractAPI
+        #endregion DataAbstractAPI
 
-    #region IDisposable
+        #region IDisposable
+        protected virtual void Dispose(bool disposing) {
+            if (!Disposed) {
+                if (disposing) {
+                    foreach (var ball in BallsList) {
+                        ball.Dispose();
+                    }
 
-    protected virtual void Dispose(bool disposing)
-    {
-      if (!Disposed)
-      {
-        if (disposing)
-        {
-          MoveTimer.Dispose();
-          BallsList.Clear();
+                    BallsList.Clear();
+                }
+
+                Disposed = true;
+            }
+            else
+                throw new ObjectDisposedException(nameof(DataImplementation));
         }
-        Disposed = true;
-      }
-      else
-        throw new ObjectDisposedException(nameof(DataImplementation));
-    }
 
-    public override void Dispose()
-    {
-      // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-      Dispose(disposing: true);
-      GC.SuppressFinalize(this);
-    }
+        public override void Dispose() {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
 
         #endregion IDisposable
-        
-    #region private
 
-    //private bool disposedValue;
-    private bool Disposed = false;
+        #region private
 
-    private readonly Timer MoveTimer;
-    private Random RandomGenerator = new();
-    private List<Ball> BallsList = [];
+        private bool Disposed = false;
 
-    private void Move(object? x)
-    {
-        double logicBoardWidth = 100.0;
-        double logicBoardHeight = 100.0;
+        private Random RandomGenerator = new();
 
-        foreach (Ball item in BallsList)
-            item.Move(logicBoardWidth, logicBoardHeight);
-    }
+        private List<IBall> BallsList = new List<IBall>();
 
         #endregion private
 
         #region TestingInfrastructure
 
         [Conditional("DEBUG")]
-    internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
-    {
-      returnBallsList(BallsList);
-    }
+        internal void CheckBallsList(Action<IEnumerable<IBall>> returnBallsList)
+        {
+            returnBallsList(BallsList);
+        }
 
-    [Conditional("DEBUG")]
-    internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
-    {
-      returnNumberOfBalls(BallsList.Count);
-    }
+        [Conditional("DEBUG")]
+        internal void CheckNumberOfBalls(Action<int> returnNumberOfBalls)
+        {
+            returnNumberOfBalls(BallsList.Count);
+        }
 
-    [Conditional("DEBUG")]
-    internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
-    {
-      returnInstanceDisposed(Disposed);
-    }
+        [Conditional("DEBUG")]
+        internal void CheckObjectDisposed(Action<bool> returnInstanceDisposed)
+        {
+            returnInstanceDisposed(Disposed);
+        }
 
-    #endregion TestingInfrastructure
-  }
+        #endregion TestingInfrastructure
+    }
 }

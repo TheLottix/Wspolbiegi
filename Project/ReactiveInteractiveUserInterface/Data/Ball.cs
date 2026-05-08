@@ -8,72 +8,112 @@
 //
 //_____________________________________________________________________________________________________________________________________
 
+
+using System.Diagnostics;
+
 namespace TP.ConcurrentProgramming.Data
 {
-  internal class Ball : IBall
-  {
-    #region ctor
+    internal class Ball : IBall {
+        #region ctor
 
-    public double Diameter { get; init; }
+        public double Diameter { get; init; }
      
-    internal Ball(Vector initialPosition, Vector initialVelocity)
-    {
-      Position = initialPosition;
-      Velocity = initialVelocity;
+        internal Ball(Vector initialPosition, Vector initialVelocity, double boardWidth, double boardHeight, double mass, double diameter) {
+            Position = initialPosition;
+            Velocity = initialVelocity;
 
-      Diameter = 5.0;
-    }
+            _boardWidth = boardWidth;
+            _boardHeight = boardHeight;
+            Mass = mass;
+            Diameter = diameter;
 
-    #endregion ctor
+            _isMoving = true;
 
-    #region IBall
-
-    public event EventHandler<IVector>? NewPositionNotification;
-
-    public IVector Velocity { get; set; }
-
-    #endregion IBall
-
-    #region private
-
-    private Vector Position;
-
-    private void RaiseNewPositionChangeNotification()
-    {
-      NewPositionNotification?.Invoke(this, Position);
-    }
-
-    internal void Move(double boardWidth, double boardHeight)
-    {
-        double nextX = Position.x + Velocity.x;
-        double nextY = Position.y + Velocity.y;
-
-        if (nextX <= 0)
-        {
-            nextX = 0;
-            Velocity = new Vector(-Velocity.x, Velocity.y);
-        }
-        else if (nextX + Diameter >= boardWidth)
-        {
-            nextX = boardWidth - Diameter;
-            Velocity = new Vector(-Velocity.x, Velocity.y);
+            Task.Run(MoveLoop);
         }
 
-        if (nextY <= 0)
-        {
-            nextY = 0;
-            Velocity = new Vector(Velocity.x, -Velocity.y);
-        }
-        else if (nextY + Diameter >= boardHeight)
-        {
-            nextY = boardHeight - Diameter;
-            Velocity = new Vector(Velocity.x, -Velocity.y);
+        #endregion ctor
+
+        #region IBall
+
+        public event EventHandler<IVector>? NewPositionNotification;
+
+
+        public double Mass { get; init; }
+        public object BallLock { get; } = new object();
+
+
+        public IVector Position { get; private set; } = new Vector(0, 0);
+        public IVector Velocity { get; set; } = new Vector(0, 0);
+
+        #endregion IBall
+
+        #region private
+
+        private readonly double _boardWidth;
+        private readonly double _boardHeight;
+        private bool _isMoving;
+        private readonly int _delayMs = 15;
+
+        private void RaiseNewPositionChangeNotification() {
+            NewPositionNotification?.Invoke(this, Position);
         }
 
-        Position = new Vector(nextX, nextY);
-        RaiseNewPositionChangeNotification();
-    }
+        private async Task MoveLoop() {
+            Stopwatch stopwatch = new Stopwatch();
+
+            while (_isMoving) { 
+                stopwatch.Restart();
+                lock (BallLock) { // Sekcja krytyczna
+                    double nextX = Position.x + Velocity.x;
+                    double nextY = Position.y + Velocity.y;
+
+                    if (nextX <= 0) { 
+                        nextX = 0;
+                        Velocity = new Vector(-Velocity.x, Velocity.y);
+                    }
+                    else if (nextX + Diameter >= _boardWidth) { 
+                        nextX = _boardWidth - Diameter;
+                        Velocity = new Vector(-Velocity.x, Velocity.y);
+                    }
+
+                    if (nextY <= 0) { 
+                        nextY = 0;
+                        Velocity = new Vector(Velocity.x, -Velocity.y);
+                    }
+                    else if (nextY + Diameter >= _boardHeight)
+                    {
+                        nextY = _boardHeight - Diameter;
+                        Velocity = new Vector(Velocity.x, -Velocity.y);
+                    }
+
+                    Position = new Vector(nextX, nextY);
+                }
+
+                RaiseNewPositionChangeNotification();
+
+                stopwatch.Stop();
+                int timeToWait = _delayMs - (int)stopwatch.ElapsedMilliseconds;
+                if (timeToWait > 0)
+                {
+                    await Task.Delay(timeToWait);
+                }
+                else
+                {
+                    await Task.Yield();
+                }
+            }
+        }
 
         #endregion private
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            _isMoving = false;
+        }
+
+        #endregion IDisposable
     }
 }

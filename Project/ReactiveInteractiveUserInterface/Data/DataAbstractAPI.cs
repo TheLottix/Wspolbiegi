@@ -10,55 +10,50 @@
 
 namespace TP.ConcurrentProgramming.Data
 {
-  public abstract class DataAbstractAPI : IDisposable
-  {
-    #region Layer Factory
+    public abstract class DataAbstractAPI : IDisposable {
+        #region Layer Factory
 
-    public static DataAbstractAPI GetDataLayer()
-    {
-      return modelInstance.Value;
+        public static DataAbstractAPI GetDataLayer() {
+            return modelInstance.Value;
+        }
+
+        #endregion Layer Factory
+
+        #region public API
+
+        public abstract void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler);
+
+        public abstract double BoardWidth { get; }
+        public abstract double BoardHeight { get; }
+
+        #endregion public API
+
+        #region IDisposable
+
+        public abstract void Dispose();
+
+        #endregion IDisposable
+
+        #region private
+
+        private static Lazy<DataAbstractAPI> modelInstance = new Lazy<DataAbstractAPI>(() => new DataImplementation());
+
+        #endregion private
     }
 
-    #endregion Layer Factory
+    public interface IVector {
+        double x { get; }
 
-    #region public API
+        double y { get; }
+    }
 
-    public abstract void Start(int numberOfBalls, Action<IVector, IBall> upperLayerHandler);
+    public interface IBall : IDisposable {
+        event EventHandler<IVector> NewPositionNotification;
 
-    #endregion public API
-
-    #region IDisposable
-
-    public abstract void Dispose();
-
-    #endregion IDisposable
-
-    #region private
-
-    private static Lazy<DataAbstractAPI> modelInstance = new Lazy<DataAbstractAPI>(() => new DataImplementation());
-
-    #endregion private
-  }
-
-  public interface IVector
-  {
-    /// <summary>
-    /// The X component of the vector.
-    /// </summary>
-    double x { get; init; }
-
-    /// <summary>
-    /// The y component of the vector.
-    /// </summary>
-    double y { get; init; }
-  }
-
-  public interface IBall
-  {
-    event EventHandler<IVector> NewPositionNotification;
-
-    IVector Velocity { get; set; }
-
-    double Diameter { get; }
-  }
+        IVector Velocity { get; set; }
+        IVector Position { get; }
+        double Diameter { get; }
+        double Mass { get; }
+        object BallLock { get; }
+    }
 }

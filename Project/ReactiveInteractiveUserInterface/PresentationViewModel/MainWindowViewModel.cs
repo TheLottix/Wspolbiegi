@@ -17,8 +17,7 @@ using ModelIBall = TP.ConcurrentProgramming.Presentation.Model.IBall;
 
 namespace TP.ConcurrentProgramming.Presentation.ViewModel
 {
-    public class MainWindowViewModel : ViewModelBase, IDisposable
-    {
+    public class MainWindowViewModel : ViewModelBase, IDisposable {
         private IDisposable _observer = null;
         private ModelAbstractApi _modelLayer;
         private bool _disposed = false;
@@ -27,8 +26,7 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
 
         public MainWindowViewModel() : this(null) { }
 
-        internal MainWindowViewModel(ModelAbstractApi modelLayerAPI)
-        {
+        internal MainWindowViewModel(ModelAbstractApi modelLayerAPI) {
             _syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
             _modelLayer = modelLayerAPI ?? ModelAbstractApi.CreateModel();
 
@@ -43,31 +41,29 @@ namespace TP.ConcurrentProgramming.Presentation.ViewModel
         public ObservableCollection<ModelIBall> Balls { get; } = new ObservableCollection<ModelIBall>();
         public ICommand StartCommand { get; }
 
-        public int BallsCount
-        {
+        public int BallsCount {
             get => _ballsCount;
             set { _ballsCount = value; RaisePropertyChanged(); }
         }
 
-        private void ExecuteStart()
-        {
+        private void ExecuteStart() {
             Balls.Clear();
             _modelLayer.Start(BallsCount);
         }
 
         public void Start(int numberOfBalls) => _modelLayer.Start(numberOfBalls);
 
-        public void Dispose()
-        {
+        public void Dispose() {
             if (_disposed) return;
             _observer?.Dispose();
             _modelLayer.Dispose();
+
+            Balls.Clear();
             _disposed = true;
         }
     }
 
-    public class RelayCommand : ICommand
-    {
+    public class RelayCommand : ICommand {
         private readonly Action _execute;
         public RelayCommand(Action execute) => _execute = execute;
         public bool CanExecute(object parameter) => true;
