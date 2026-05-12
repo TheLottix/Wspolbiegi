@@ -38,10 +38,8 @@ namespace TP.ConcurrentProgramming.Data
 
         public event EventHandler<IVector>? NewPositionNotification;
 
-
         public double Mass { get; init; }
         public object BallLock { get; } = new object();
-
 
         public IVector Position { get; private set; } = new Vector(0, 0);
         public IVector Velocity { get; set; } = new Vector(0, 0);
@@ -59,47 +57,25 @@ namespace TP.ConcurrentProgramming.Data
             NewPositionNotification?.Invoke(this, Position);
         }
 
-        private async Task MoveLoop() {
+        private async Task MoveLoop()
+        {
             Stopwatch stopwatch = new Stopwatch();
 
-            while (_isMoving) { 
+            while (_isMoving) {
                 stopwatch.Restart();
-                lock (BallLock) { // Sekcja krytyczna
-                    double nextX = Position.x + Velocity.x;
-                    double nextY = Position.y + Velocity.y;
 
-                    if (nextX <= 0) { 
-                        nextX = 0;
-                        Velocity = new Vector(-Velocity.x, Velocity.y);
-                    }
-                    else if (nextX + Diameter >= _boardWidth) { 
-                        nextX = _boardWidth - Diameter;
-                        Velocity = new Vector(-Velocity.x, Velocity.y);
-                    }
-
-                    if (nextY <= 0) { 
-                        nextY = 0;
-                        Velocity = new Vector(Velocity.x, -Velocity.y);
-                    }
-                    else if (nextY + Diameter >= _boardHeight)
-                    {
-                        nextY = _boardHeight - Diameter;
-                        Velocity = new Vector(Velocity.x, -Velocity.y);
-                    }
-
-                    Position = new Vector(nextX, nextY);
+                lock (BallLock) {
+                    Position = new Vector(Position.x + Velocity.x, Position.y + Velocity.y);
                 }
-
                 RaiseNewPositionChangeNotification();
 
                 stopwatch.Stop();
                 int timeToWait = _delayMs - (int)stopwatch.ElapsedMilliseconds;
-                if (timeToWait > 0)
-                {
+
+                if (timeToWait > 0) {
                     await Task.Delay(timeToWait);
                 }
-                else
-                {
+                else {
                     await Task.Yield();
                 }
             }
@@ -109,8 +85,7 @@ namespace TP.ConcurrentProgramming.Data
 
         #region IDisposable
 
-        public void Dispose()
-        {
+        public void Dispose() {
             _isMoving = false;
         }
 

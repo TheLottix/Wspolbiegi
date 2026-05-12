@@ -50,29 +50,35 @@ namespace TP.ConcurrentProgramming.BusinessLogic
             });
         }
 
-        private void CheckCollisions(object? sender, IVector e)
-        {
+        private void CheckCollisions(object? sender, IVector e) {
             Data.IBall currentBall = (Data.IBall)sender!;
 
-            lock (_collisionLock)
-            {
-                foreach (var otherBall in _logicBalls)
-                {
+            lock (_collisionLock) {
+                lock (currentBall.BallLock) {
+                    double nextX = currentBall.Position.x;
+                    double nextY = currentBall.Position.y;
+
+                    if (nextX <= 0 || nextX + currentBall.Diameter >= layerBellow.BoardWidth) {
+                        currentBall.Velocity = new LogicVector(-currentBall.Velocity.x, currentBall.Velocity.y);
+                    }
+
+                    if (nextY <= 0 || nextY + currentBall.Diameter >= layerBellow.BoardHeight) {
+                        currentBall.Velocity = new LogicVector(currentBall.Velocity.x, -currentBall.Velocity.y);
+                    }
+                }
+
+                foreach (var otherBall in _logicBalls) {
                     if (currentBall == otherBall) continue;
-                    lock (currentBall.BallLock)
-                    {
-                        lock (otherBall.BallLock)
-                        {
+
+                    lock (currentBall.BallLock) {
+                        lock (otherBall.BallLock) {
                             double dx = currentBall.Position.x - otherBall.Position.x;
                             double dy = currentBall.Position.y - otherBall.Position.y;
                             double distance = Math.Sqrt(dx * dx + dy * dy);
                             double minDistance = (currentBall.Diameter / 2.0) + (otherBall.Diameter / 2.0);
 
-                            if (distance <= minDistance)
-                            {
-                                if ((currentBall.Velocity.x - otherBall.Velocity.x) * dx +
-                                    (currentBall.Velocity.y - otherBall.Velocity.y) * dy < 0)
-                                {
+                            if (distance <= minDistance) {
+                                if ((currentBall.Velocity.x - otherBall.Velocity.x) * dx + (currentBall.Velocity.y - otherBall.Velocity.y) * dy < 0) {
                                     double m1 = currentBall.Mass;
                                     double m2 = otherBall.Mass;
 
